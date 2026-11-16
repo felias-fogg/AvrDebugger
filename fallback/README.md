@@ -39,8 +39,12 @@ INSTALL-the-AvrDebugger-package/bin/pyavrocd text eol=lf
 
 cortex-debug starts GDB first and asks for its version. If that fails, it
 gives up without a word, and the server is never started. So the stub GDB
-answers the version check and fails every command after it. By then the
-stub server has been started, and its output is the message.
+answers the version check, and every command after it with success. Then
+cortex-debug starts the stub server, which prints the message and exits.
+cortex-debug ends the session in order and shows the popup "GDB Server Quit
+Unexpectedly. See gdb-server output for more details", with the gdb-server
+terminal in front. (A stub GDB that fails the commands after the version
+check crashed cortex-debug's debug adapter instead.)
 
 `stub.c` is the Windows version of both scripts. It tells its role by the
 argument `--interpreter=mi2`, which only GDB gets. `check.sh` checks a

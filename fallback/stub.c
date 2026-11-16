@@ -3,8 +3,8 @@
  * avr-gdb.exe and pyavrocd.exe. It tells its role by the arguments: cortex-debug
  * starts GDB with --interpreter=mi2, the server never gets that option.
  *
- *  - as GDB: answer -gdb-version, fail every other command (see avr-gdb)
- *  - as server: print message.txt, wait, exit 1 (see pyavrocd)
+ *  - as GDB: answer -gdb-version, and every other command with ^done (see avr-gdb)
+ *  - as server: print message.txt, exit 1 (see pyavrocd)
  *
  * MESSAGE has to stay identical to message.txt; the workflow checks that.
  * Builds with any C compiler; the workflow uses x86_64-w64-mingw32-gcc.
@@ -12,13 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#ifdef _WIN32
-#include <windows.h>
-#define WAIT_SECONDS(s) Sleep((s) * 1000)
-#else
-#include <unistd.h>
-#define WAIT_SECONDS(s) sleep(s)
-#endif
 
 static const char MESSAGE[] =
     "*** The AvrDebugger package is not installed. ***\n"
@@ -42,8 +35,7 @@ static int as_gdb(void)
             printf("~\"GNU gdb (AvrDebugger missing) 15.2\\n\"\n%.*s^done\n(gdb) \n",
                    (int)n, line);
         else
-            printf("%.*s^error,msg=\"The AvrDebugger package is not installed.\"\n(gdb) \n",
-                   (int)n, line);
+            printf("%.*s^done\n(gdb) \n", (int)n, line);
         fflush(stdout);
     }
     return 0;
@@ -53,7 +45,6 @@ static int as_server(void)
 {
     fputs(MESSAGE, stdout);
     fflush(stdout);
-    WAIT_SECONDS(20);
     return 1;
 }
 
