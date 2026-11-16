@@ -1,0 +1,166 @@
+{
+  "packages": [
+    {
+      "name": "AvrDebugger",
+      "maintainer": "felias-fogg",
+      "websiteURL": "https://github.com/felias-fogg/AvrDebugger",
+      "email": "",
+      "help": {
+        "online": "https://github.com/felias-fogg/AvrDebugger"
+      },
+      "platforms": [
+        {
+          "name": "AvrDebugger",
+          "architecture": "avr",
+          "version": "0.1.0",
+          "category": "Contributed",
+          "url": "https://github.com/felias-fogg/AvrDebugger/releases/download/v0.1.0/AvrDebugger-0.1.0.tar.bz2",
+          "archiveFileName": "AvrDebugger-0.1.0.tar.bz2",
+          "checksum": "SHA-256:767283225d4fc2a2701a762576b9a31fb2f9a7919f777d728b765a4ad10d3b64",
+          "size": "21322",
+          "boards": [
+            {
+              "name": "Arduino Leonardo (debug)"
+            },
+            {
+              "name": "Arduino Mega or Mega 2560 (debug)"
+            },
+            {
+              "name": "Arduino Nano (debug)"
+            },
+            {
+              "name": "Arduino Pro or Pro Mini (debug)"
+            },
+            {
+              "name": "Arduino UNO (debug)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "AvrDebugger",
+              "name": "avrdude",
+              "version": "8.3"
+            },
+            {
+              "packager": "AvrDebugger",
+              "name": "avr-debugger",
+              "version": "2.0.0"
+            }
+          ]
+        }
+      ],
+      "tools": [
+        {
+          "name": "avr-debugger",
+          "version": "2.0.0",
+          "systems": [
+            {
+              "size": "30540999",
+              "checksum": "SHA-256:449bcde7f0833bc3df0314b1b3006a2716e82c64fae205e7867c27009e889483",
+              "host": "aarch64-linux-gnu",
+              "archiveFileName": "avr-debugger-2.0.0-aarch64-linux-gnu.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.0.0/avr-debugger-2.0.0-aarch64-linux-gnu.tar.gz"
+            },
+            {
+              "size": "25193905",
+              "checksum": "SHA-256:7674bb6014c45c372e1cc0306c31486bd45e0d26132b2ed71eb36bfbdf232a21",
+              "host": "arm-linux-gnueabihf",
+              "archiveFileName": "avr-debugger-2.0.0-arm-linux-gnueabihf.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.0.0/avr-debugger-2.0.0-arm-linux-gnueabihf.tar.gz"
+            },
+            {
+              "size": "36283695",
+              "checksum": "SHA-256:5d7f2d177fa004d87f359949ceca4bc56867de5e5b5800741bdf9ab3acd5e8d8",
+              "host": "arm64-apple-darwin",
+              "archiveFileName": "avr-debugger-2.0.0-arm64-apple-darwin.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.0.0/avr-debugger-2.0.0-arm64-apple-darwin.tar.gz"
+            },
+            {
+              "size": "29320113",
+              "checksum": "SHA-256:e13969e847d79e93fdc498282ff1df3993bd770faf086fed1ae74771c6aa5d1d",
+              "host": "i686-linux-gnu",
+              "archiveFileName": "avr-debugger-2.0.0-i686-linux-gnu.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.0.0/avr-debugger-2.0.0-i686-linux-gnu.tar.gz"
+            },
+            {
+              "size": "28854988",
+              "checksum": "SHA-256:b119649bfdf99fffe1a6aca30a9fee1e502c8b4acbea1a56834736378853c376",
+              "host": "i686-mingw32",
+              "archiveFileName": "avr-debugger-2.0.0-i686-mingw32.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.0.0/avr-debugger-2.0.0-i686-mingw32.tar.gz"
+            },
+            {
+              "size": "37545340",
+              "checksum": "SHA-256:43a7249cb2d24c49e7dc7382ae059f4cee1f22a4a5c3585cfdf45a31235239f4",
+              "host": "x86_64-apple-darwin",
+              "archiveFileName": "avr-debugger-2.0.0-x86_64-apple-darwin.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.0.0/avr-debugger-2.0.0-x86_64-apple-darwin.tar.gz"
+            },
+            {
+              "size": "29938612",
+              "checksum": "SHA-256:dfb34a0ddf888313a9d2e1a1c1d09e5aebde302be9a6c8e4e9cc145b8fd53372",
+              "host": "x86_64-linux-gnu",
+              "archiveFileName": "avr-debugger-2.0.0-x86_64-linux-gnu.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.0.0/avr-debugger-2.0.0-x86_64-linux-gnu.tar.gz"
+            },
+            {
+              "size": "30844623",
+              "checksum": "SHA-256:44c187f999888cffc42cb609905c3e57a1e06a55a42bf0b63091ae569ac1a2d0",
+              "host": "x86_64-mingw32",
+              "archiveFileName": "avr-debugger-2.0.0-x86_64-mingw32.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.0.0/avr-debugger-2.0.0-x86_64-mingw32.tar.gz"
+            }
+          ]
+        },
+        {
+          "name": "avrdude",
+          "version": "8.3",
+          "systems": [
+            {
+              "size": "3635771",
+              "checksum": "SHA-256:06778d5d2abd4558db5e87748031c52c4537c19d5ba0c0c9e66e97b4d924bcf9",
+              "host": "arm-linux-gnueabihf",
+              "archiveFileName": "avrdude_v8.3_Linux_ARMv6.tar.gz",
+              "url": "https://github.com/avrdudes/avrdude/releases/download/v8.3/avrdude_v8.3_Linux_ARMv6.tar.gz"
+            },
+            {
+              "size": "3782942",
+              "checksum": "SHA-256:3644f7e43b0e65697ae02ed118e0691bee10439993b6026c9e0072dd44fe2983",
+              "host": "aarch64-linux-gnu",
+              "archiveFileName": "avrdude_v8.3_Linux_ARM64.tar.gz",
+              "url": "https://github.com/avrdudes/avrdude/releases/download/v8.3/avrdude_v8.3_Linux_ARM64.tar.gz"
+            },
+            {
+              "size": "3360647",
+              "checksum": "SHA-256:ad0268e2d24dd4ade1366c783a5c1f25386d0a737b4b07494246a1eedbdfc9eb",
+              "host": "x86_64-apple-darwin12",
+              "archiveFileName": "avrdude_v8.3_macOS_64bit.tar.gz",
+              "url": "https://github.com/avrdudes/avrdude/releases/download/v8.3/avrdude_v8.3_macOS_64bit.tar.gz"
+            },
+            {
+              "size": "3720526",
+              "checksum": "SHA-256:ef7461a5e09d666dcbeedb9bcb451cb21d0f1ce1c885a6700462bb6c9518fb46",
+              "host": "x86_64-linux-gnu",
+              "archiveFileName": "avrdude_v8.3_Linux_64bit.tar.gz",
+              "url": "https://github.com/avrdudes/avrdude/releases/download/v8.3/avrdude_v8.3_Linux_64bit.tar.gz"
+            },
+            {
+              "size": "3665222",
+              "checksum": "SHA-256:3c6dd0297534a55c2c98799228367a0ec67dc395c8e53ffa884d07ea6548297d",
+              "host": "i686-linux-gnu",
+              "archiveFileName": "avrdude_v8.3_Linux_32bit.tar.gz",
+              "url": "https://github.com/avrdudes/avrdude/releases/download/v8.3/avrdude_v8.3_Linux_32bit.tar.gz"
+            },
+            {
+              "size": "4101672",
+              "checksum": "SHA-256:16b44cec6a1d5dbb00cf9affac9fc8a9056c5e7ae86da61cc3925e09d3fdee64",
+              "host": "i686-mingw32",
+              "archiveFileName": "avrdude_v8.3_Windows_32bit.tar.gz",
+              "url": "https://github.com/avrdudes/avrdude/releases/download/v8.3/avrdude_v8.3_Windows_32bit.tar.gz"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
