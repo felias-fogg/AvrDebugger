@@ -47,6 +47,45 @@
               "version": "2.0.0"
             }
           ]
+        },
+        {
+          "name": "AvrDebugger",
+          "architecture": "avr",
+          "version": "0.1.0-rc2",
+          "category": "Contributed",
+          "url": "https://github.com/felias-fogg/AvrDebugger/releases/download/v0.1.0-rc2/AvrDebugger-0.1.0-rc2.tar.bz2",
+          "archiveFileName": "AvrDebugger-0.1.0-rc2.tar.bz2",
+          "checksum": "SHA-256:581aba6a0b7861818e1a009c9e12dc9af1b60f5779429c715ae2aa528eb8523f",
+          "size": "21172",
+          "boards": [
+            {
+              "name": "Arduino Leonardo (debug)"
+            },
+            {
+              "name": "Arduino Mega or Mega 2560 (debug)"
+            },
+            {
+              "name": "Arduino Nano (debug)"
+            },
+            {
+              "name": "Arduino Pro or Pro Mini (debug)"
+            },
+            {
+              "name": "Arduino UNO (debug)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "AvrDebugger",
+              "name": "avrdude",
+              "version": "8.3"
+            },
+            {
+              "packager": "AvrDebugger",
+              "name": "avr-debugger",
+              "version": "2.0.0"
+            }
+          ]
         }
       ],
       "tools": [
