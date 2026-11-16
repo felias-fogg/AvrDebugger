@@ -18,6 +18,14 @@ version=0.1.0
 # This platform's own files are reached through {build.board.platform.path}.
 # Needs arduino-cli >= 1.0.4.
 runtime.use_core_platform_path_for_runtime_platform_path=true
+# For IDE 1.8.x, whose builder knows neither the line above nor
+# {build.board.platform.path}: there {runtime.platform.path} is still this platform.
+# arduino-cli sets {build.board.platform.path} itself and ignores this line
+# (measured with arduino-cli 1.5.1 on 2026-11-16).
+# In IDE 1.8.x, "Burn Bootloader" therefore looks for {runtime.platform.path}/bootloaders
+# in this platform, which has none; the README sends users to the Arduino AVR Boards
+# board for that.
+build.board.platform.path={runtime.platform.path}
 
 # Optimization flags for debugging
 compiler.optimization_flags=-Os -ggdb3 -DNDEBUG -flto "@{build.path}/options.release_flags"

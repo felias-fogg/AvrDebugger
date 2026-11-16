@@ -49,6 +49,8 @@ With arduino-cli:
 arduino-cli core install AvrDebugger:avr --additional-urls https://felias-fogg.github.io/AvrDebugger/package_felias-fogg_AvrDebugger_index.json
 ```
 
+AvrDebugger is meant for the Arduino IDE 2; the IDE 1.8.x has no debugger. The `(debug)` boards compile and upload in the IDE 1.8.x as well, but `Tools -> Burn Bootloader` does not work there: use the corresponding board of *Arduino AVR Boards* for that.
+
 ## Getting started
 
 1. **Prepare the board.** debugWIRE boards need a hardware change on the RESET line; on an Uno, this means cutting the `RESET EN` solder bridge. JTAG boards need the JTAG pins enabled by a fuse: select `JTAG enabled` in `Tools -> JTAG pins` and use `Tools -> Burn Bootloader` with an ISP programmer. The [board preparation](https://pyavrocd.io/latest/board-preparation/) page has the details for each board.
