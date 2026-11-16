@@ -1,7 +1,8 @@
 # The programmers of arduino:avr are inherited (build.core=arduino:arduino) and shown by
 # the IDE, so only the ones added for debugging are here: dw-link and the debug probes
-# PyAvrOCD supports. Most of them need the avrdude 8.3 of this platform; arduino:avr's
-# avrdude 6.3 does not know 11 of their protocol names.
+# PyAvrOCD supports. PICkit 5 and PICkit Basic need the avrdude 8.3 of this platform:
+# the avrdude 8.0.0-arduino1 of arduino:avr 1.8.8 does not know them (the 6.3 of 1.8.6
+# did not know 11 of these protocol names).
 
 # dw-link (version 7 and later) programs as a JTAGICE mkII in ISP mode over its serial
 # port. avrdude's jtag2isp stays at the 19200 bps the mkII starts with: its open routine
