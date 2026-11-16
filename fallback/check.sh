@@ -24,10 +24,12 @@ done
 PID=$!
 sleep 3
 tr -d '\r' < "$WORK/server.out" > "$WORK/server.txt"
-if cmp -s "$WORK/server.txt" "$MSG"; then
+# A Windows checkout may have turned message.txt into CRLF.
+tr -d '\r' < "$MSG" > "$WORK/message.txt"
+if cmp -s "$WORK/server.txt" "$WORK/message.txt"; then
     echo "pyavrocd: prints message.txt"
 else
-    echo "pyavrocd: output differs from message.txt"; diff "$WORK/server.txt" "$MSG"; fail=1
+    echo "pyavrocd: output differs from message.txt"; diff "$WORK/server.txt" "$WORK/message.txt"; fail=1
 fi
 kill "$PID" 2>/dev/null
 wait "$PID" 2>/dev/null
