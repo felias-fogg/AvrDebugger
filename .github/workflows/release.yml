@@ -120,15 +120,106 @@ jobs:
             || { echo "a release build did not give -Os"; exit 1; }
           echo "-Og with, -Os without"
 
+  fallback-build:
+    # The kit the other cores carry in INSTALL-the-AvrDebugger-package: stubs
+    # that stand in for avr-gdb and pyavrocd when AvrDebugger is not installed,
+    # and tell the user so in the gdb-server terminal (see fallback/README.md).
+    # Built once here; the tests below and the release use this very archive.
+    name: Build the fallback kit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the Windows stub and pack the kit
+        run: |
+          sudo apt-get install -y -qq gcc-mingw-w64-x86-64 > /dev/null
+          KIT=kit/INSTALL-the-AvrDebugger-package/bin
+          mkdir -p "$KIT"
+          x86_64-w64-mingw32-gcc -std=c99 -Wall -Wextra -Werror -Os -s \
+              -o "$KIT/avr-gdb.exe" fallback/stub.c
+          cp "$KIT/avr-gdb.exe" "$KIT/pyavrocd.exe"
+          install -m 755 fallback/avr-gdb fallback/pyavrocd "$KIT/"
+          # tar, not the artifact's zip: the shell stubs need their x bit.
+          tar -C kit -czf fallback-kit.tar.gz INSTALL-the-AvrDebugger-package
+          tar -tvzf fallback-kit.tar.gz
+
+      - name: Check the shell stubs on Linux
+        run: bash fallback/check.sh fallback
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fallback-kit
+          path: fallback-kit.tar.gz
+
+  fallback-test:
+    name: Fallback kit on ${{ matrix.os }}
+    needs: fallback-build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: fallback-kit
+
+      - name: Unpack
+        run: tar -xzf fallback-kit.tar.gz
+
+      - name: Check the shell stubs
+        if: runner.os != 'Windows'
+        run: bash fallback/check.sh INSTALL-the-AvrDebugger-package/bin
+
+      - name: Check the exe stubs
+        if: runner.os == 'Windows'
+        run: |
+          # Only the exes, so that nothing but them can answer.
+          mkdir exe
+          cp INSTALL-the-AvrDebugger-package/bin/*.exe exe/
+          bash fallback/check.sh exe
+
+      - name: Does a spawn without extension find the exe next to the script?
+        if: runner.os == 'Windows'
+        run: |
+          # cortex-debug spawns .../bin/avr-gdb without a shell and without
+          # ".exe", and in the kit a shell script of that very name lies next
+          # to avr-gdb.exe. Node has to start the exe all the same.
+          BIN=$(cygpath -w "$PWD/INSTALL-the-AvrDebugger-package/bin")
+          node -e '
+            const cp = require("child_process"), path = require("path");
+            const bin = process.argv[1];
+            const gdb = cp.spawnSync(path.join(bin, "avr-gdb"), ["-q", "--interpreter=mi2", "x.elf"],
+                                     { input: "1-gdb-version\n2-gdb-set target-async on\n" });
+            if (gdb.error) { console.log("avr-gdb: " + gdb.error); process.exit(1); }
+            const out = gdb.stdout.toString();
+            console.log(out);
+            if (!/^1\^done/m.test(out)) { console.log("avr-gdb: version check not answered"); process.exit(1); }
+            const srv = cp.spawnSync(path.join(bin, "pyavrocd"), ["-s", "nop"], { timeout: 3000 });
+            const text = srv.stdout.toString();
+            console.log(text);
+            if (!/AvrDebugger package is not installed/.test(text)) { console.log("pyavrocd: no message"); process.exit(1); }
+            console.log("both found as .exe without the extension");
+          ' "$BIN"
+
   release:
     name: Publish
     runs-on: ubuntu-latest
-    needs: compile
+    needs: [compile, fallback-test]
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: fallback-kit
 
       - name: Which version, which index, which PyAvrOCD?
         run: |
@@ -173,6 +264,10 @@ jobs:
           # --clobber replaces an archive of an earlier attempt; the index step
           # refuses a version that is already published with a different one.
           gh release upload "${GITHUB_REF_NAME}" "$ARCHIVE" --clobber
+          # The fallback kit for the other cores, the archive tested above. The
+          # asset takes the file's own name, so rename it first.
+          mv fallback-kit.tar.gz "AvrDebugger-fallback-${VERSION}.tar.gz"
+          gh release upload "${GITHUB_REF_NAME}" "AvrDebugger-fallback-${VERSION}.tar.gz" --clobber
 
       - name: Check out the branch that carries the index
         run: |

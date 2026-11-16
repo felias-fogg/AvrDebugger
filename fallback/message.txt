@@ -1,0 +1,5 @@
+*** The AvrDebugger package is not installed. ***
+Debugging needs it: add
+  https://felias-fogg.github.io/AvrDebugger/package_felias-fogg_AvrDebugger_index.json
+to Additional Boards Manager URLs (File > Preferences) and install AvrDebugger
+with the Boards Manager.
