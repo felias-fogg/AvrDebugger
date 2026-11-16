@@ -1,0 +1,145 @@
+# The programmers of arduino:avr are inherited (build.core=arduino:arduino) and shown by
+# the IDE, so only the ones added for debugging are here: dw-link and the debug probes
+# PyAvrOCD supports. Most of them need the avrdude 8.3 of this platform; arduino:avr's
+# avrdude 6.3 does not know 11 of their protocol names.
+
+# dw-link (version 7 and later) programs as a JTAGICE mkII in ISP mode over its serial
+# port. avrdude's jtag2isp stays at the 19200 bps the mkII starts with: its open routine
+# never sends PAR_BAUD_RATE (avrdude 8.3, stk500v2.c), so -b would be ignored.
+dwlink.name=dw-link (ISP mode)
+dwlink.communication=serial
+dwlink.protocol=jtag2isp
+dwlink.program.protocol=jtag2isp
+dwlink.program.tool=avrdude
+dwlink.program.tool.default=avrdude
+dwlink.program.extra_params=-P{serial.port}
+
+# The debug probes PyAvrOCD supports, as ISP and, where the probe has it, JTAG
+# programmers; Atmel-ICE (ISP) and JTAGICE3 come from arduino:avr. JTAGICE mkI left out.
+atmel_ice_jtag.name=Atmel-ICE (JTAG mode)
+atmel_ice_jtag.communication=usb
+atmel_ice_jtag.protocol=atmelice_jtag
+atmel_ice_jtag.program.protocol=atmelice_jtag
+atmel_ice_jtag.program.tool=avrdude
+atmel_ice_jtag.program.tool.default=avrdude
+atmel_ice_jtag.program.extra_params=-Pusb
+
+powerdebugger_isp.name=Power Debugger (ISP mode)
+powerdebugger_isp.communication=usb
+powerdebugger_isp.protocol=powerdebugger_isp
+powerdebugger_isp.program.protocol=powerdebugger_isp
+powerdebugger_isp.program.tool=avrdude
+powerdebugger_isp.program.tool.default=avrdude
+powerdebugger_isp.program.extra_params=-Pusb
+
+powerdebugger_jtag.name=Power Debugger (JTAG mode)
+powerdebugger_jtag.communication=usb
+powerdebugger_jtag.protocol=powerdebugger_jtag
+powerdebugger_jtag.program.protocol=powerdebugger_jtag
+powerdebugger_jtag.program.tool=avrdude
+powerdebugger_jtag.program.tool.default=avrdude
+powerdebugger_jtag.program.extra_params=-Pusb
+
+pickit4_isp.name=PICkit 4 (ISP mode)
+pickit4_isp.communication=usb
+pickit4_isp.protocol=pickit4_isp
+pickit4_isp.program.protocol=pickit4_isp
+pickit4_isp.program.tool=avrdude
+pickit4_isp.program.tool.default=avrdude
+pickit4_isp.program.extra_params=-Pusb
+
+pickit4_jtag.name=PICkit 4 (JTAG mode)
+pickit4_jtag.communication=usb
+pickit4_jtag.protocol=pickit4_jtag
+pickit4_jtag.program.protocol=pickit4_jtag
+pickit4_jtag.program.tool=avrdude
+pickit4_jtag.program.tool.default=avrdude
+pickit4_jtag.program.extra_params=-Pusb
+
+snap_isp.name=MPLAB SNAP (ISP mode)
+snap_isp.communication=usb
+snap_isp.protocol=snap_isp
+snap_isp.program.protocol=snap_isp
+snap_isp.program.tool=avrdude
+snap_isp.program.tool.default=avrdude
+snap_isp.program.extra_params=-Pusb
+
+snap_jtag.name=MPLAB SNAP (JTAG mode)
+snap_jtag.communication=usb
+snap_jtag.protocol=snap_jtag
+snap_jtag.program.protocol=snap_jtag
+snap_jtag.program.tool=avrdude
+snap_jtag.program.tool.default=avrdude
+snap_jtag.program.extra_params=-Pusb
+
+pickit5_isp.name=PICkit 5 (ISP mode)
+pickit5_isp.communication=usb
+pickit5_isp.protocol=pickit5_isp
+pickit5_isp.program.protocol=pickit5_isp
+pickit5_isp.program.tool=avrdude
+pickit5_isp.program.tool.default=avrdude
+pickit5_isp.program.extra_params=-Pusb
+
+pickit5_jtag.name=PICkit 5 (JTAG mode)
+pickit5_jtag.communication=usb
+pickit5_jtag.protocol=pickit5_jtag
+pickit5_jtag.program.protocol=pickit5_jtag
+pickit5_jtag.program.tool=avrdude
+pickit5_jtag.program.tool.default=avrdude
+pickit5_jtag.program.extra_params=-Pusb
+
+pickit_basic_isp.name=PICkit Basic (ISP mode)
+pickit_basic_isp.communication=usb
+pickit_basic_isp.protocol=pickit_basic_isp
+pickit_basic_isp.program.protocol=pickit_basic_isp
+pickit_basic_isp.program.tool=avrdude
+pickit_basic_isp.program.tool.default=avrdude
+pickit_basic_isp.program.extra_params=-Pusb
+
+pickit_basic_jtag.name=PICkit Basic (JTAG mode)
+pickit_basic_jtag.communication=usb
+pickit_basic_jtag.protocol=pickit_basic_jtag
+pickit_basic_jtag.program.protocol=pickit_basic_jtag
+pickit_basic_jtag.program.tool=avrdude
+pickit_basic_jtag.program.tool.default=avrdude
+pickit_basic_jtag.program.extra_params=-Pusb
+
+jtagice2_isp.name=JTAGICE mkII (ISP mode)
+jtagice2_isp.communication=usb
+jtagice2_isp.protocol=jtag2isp
+jtagice2_isp.program.protocol=jtag2isp
+jtagice2_isp.program.tool=avrdude
+jtagice2_isp.program.tool.default=avrdude
+jtagice2_isp.program.extra_params=-Pusb
+
+jtagice2_jtag.name=JTAGICE mkII (JTAG mode)
+jtagice2_jtag.communication=usb
+jtagice2_jtag.protocol=jtag2
+jtagice2_jtag.program.protocol=jtag2
+jtagice2_jtag.program.tool=avrdude
+jtagice2_jtag.program.tool.default=avrdude
+jtagice2_jtag.program.extra_params=-Pusb
+
+dragon_isp.name=AVR Dragon (ISP mode)
+dragon_isp.communication=usb
+dragon_isp.protocol=dragon_isp
+dragon_isp.program.protocol=dragon_isp
+dragon_isp.program.tool=avrdude
+dragon_isp.program.tool.default=avrdude
+dragon_isp.program.extra_params=-Pusb
+
+dragon_jtag.name=AVR Dragon (JTAG mode)
+dragon_jtag.communication=usb
+dragon_jtag.protocol=dragon_jtag
+dragon_jtag.program.protocol=dragon_jtag
+dragon_jtag.program.tool=avrdude
+dragon_jtag.program.tool.default=avrdude
+dragon_jtag.program.extra_params=-Pusb
+simavr.name=Simulator (simavr)
+simavr.debug.cortex-debug.custom.serverArgs.01={debug.toolchain.path}/simavr
+simavr.protocol=This_is_not_a_programmer_but_only_a_flag_to_use_the_simulator_when_debugging
+simavr.upload.protocol=This_is_not_a_programmer_but_only_a_flag_to_use_the_simulator_when_debugging
+simavr.program.protocol=This_is_not_a_programmer_but_only_a_flag_to_use_the_simulator_when_debugging
+simavr.program.tool=avrdude
+simavr.program.tool.default=avrdude
+simavr.program.extra_params=

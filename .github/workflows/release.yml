@@ -1,0 +1,207 @@
+# Releasing the core: checks first, then the mechanical part.
+#
+# ./extras/release.sh <version> checks and pushes the tag; the tag does the rest:
+#
+#     v1.0.0-rc1    a pre-release, in an index of its own
+#     v1.0.0        the real thing
+#
+# Nothing reaches the board manager index unless the checks and every compilation
+# have passed. Without a tag the same checks run as an ordinary test: a push to
+# main, a pull request or a run started by hand goes through the core check and
+# the builds and stops there.
+#
+# Laid out like XMiniCore's workflow. What differs: the platform archive is
+# attached to the GitHub release instead of being committed to gh-pages, and one
+# Python script (extras/update_index.py) writes the index, tools included.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write          # needed to create the release and to push to gh-pages
+
+jobs:
+  check:
+    name: Check the core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Consistency and release readiness
+        env:
+          # Only a tag says which version this is about.
+          TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+        run: |
+          if [ -n "$TAG" ]; then
+            python3 extras/check_core.py --tag "$TAG"
+          else
+            python3 extras/check_core.py
+          fi
+
+  compile:
+    name: Compile on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: check
+    strategy:
+      fail-fast: false
+      # A release gets all three, an ordinary push or pull request the Linux
+      # runner: the three differ in their hook scripts and paths, not in the
+      # compiler.
+      matrix:
+        os: ${{ (github.event_name == 'pull_request'
+                 || (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')))
+                && fromJSON('["ubuntu-latest"]')
+                || fromJSON('["ubuntu-latest", "macos-latest", "windows-latest"]') }}
+    defaults:
+      run:
+        shell: bash             # also on Windows, where the hooks are .bat anyway
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: AvrDebugger
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: arduino/setup-arduino-cli@v2
+
+      - name: Put the core where arduino-cli finds it
+        run: |
+          set -x
+          arduino-cli version
+          # The blank is deliberate: an unquoted use of a path in a recipe or a
+          # hook script only shows when the path has one.
+          SKETCHBOOK="$HOME/Arduino with blank"
+          arduino-cli config init --overwrite
+          arduino-cli config set directories.user "$SKETCHBOOK"
+          mkdir -p "$SKETCHBOOK/hardware/AvrDebugger"
+          cp -r AvrDebugger "$SKETCHBOOK/hardware/AvrDebugger/avr"
+          arduino-cli core update-index
+          # The boards borrow core and variants from arduino:avr, and its
+          # platform.txt is what this one overrides.
+          arduino-cli core install arduino:avr
+          arduino-cli core list
+
+      - name: Compile
+        run: |
+          # The compile recipes are inherited, so compile_all.py does not see
+          # that the cpu menu matters (it sets build.mcu); name it.
+          python AvrDebugger/extras/compile_all.py --fqbn-prefix AvrDebugger:avr \
+                 --menus cpu --work-dir "$HOME/work with blank" --timeout 300
+
+      - name: Check that the prebuild hook picks up the pragmas
+        run: |
+          python AvrDebugger/extras/check_hooks.py --fqbn AvrDebugger:avr:uno \
+                 --work-dir "$HOME/work with blank"
+
+      - name: Check that "Optimize for debugging" reaches the compiler
+        run: |
+          # The one setting this core exists for. A sketch built with it has to
+          # be compiled with -Og, and without it with -Os.
+          SKETCH="$HOME/work with blank/opt_probe"
+          mkdir -p "$SKETCH"
+          printf 'void setup() { }\nvoid loop() { }\n' > "$SKETCH/opt_probe.ino"
+          arduino-cli compile -v --clean --optimize-for-debug -b AvrDebugger:avr:uno \
+                 "$SKETCH" > debug.log 2>&1 || { cat debug.log; exit 1; }
+          arduino-cli compile -v --clean -b AvrDebugger:avr:uno \
+                 "$SKETCH" > release.log 2>&1 || { cat release.log; exit 1; }
+          grep 'opt_probe.ino.cpp.o' debug.log   | grep -q -- ' -Og ' \
+            || { echo "--optimize-for-debug did not give -Og"; exit 1; }
+          grep 'opt_probe.ino.cpp.o' release.log | grep -q -- ' -Os ' \
+            || { echo "a release build did not give -Os"; exit 1; }
+          echo "-Og with, -Os without"
+
+  release:
+    name: Publish
+    runs-on: ubuntu-latest
+    needs: compile
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Which version, which index, which PyAvrOCD?
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ARCHIVE="AvrDebugger-${VERSION}.tar.bz2"
+          # Release candidates go into an index of their own, so the board
+          # manager of an ordinary user never offers them. They may depend on a
+          # PyAvrOCD pre-release; a real release only on a real one.
+          case "${GITHUB_REF_NAME}" in
+            *-rc*) INDEX=package_felias-fogg_AvrDebugger_rc_index.json; PYAVROCD=newest ;;
+            *)     INDEX=package_felias-fogg_AvrDebugger_index.json;    PYAVROCD=latest ;;
+          esac
+          {
+            echo "VERSION=$VERSION"
+            echo "ARCHIVE=$ARCHIVE"
+            echo "INDEX_FILE=$INDEX"
+            echo "PYAVROCD=$PYAVROCD"
+          } >> "$GITHUB_ENV"
+          echo "$ARCHIVE goes into $INDEX, with the $PYAVROCD PyAvrOCD"
+
+      - name: Pack the platform
+        run: |
+          # git archive leaves out what .gitattributes marks export-ignore:
+          # .github and extras are not part of what the board manager installs.
+          git archive --format=tar --prefix="AvrDebugger-${VERSION}/" HEAD \
+            | bzip2 -9 > "$ARCHIVE"
+          tar tjf "$ARCHIVE"
+
+      - name: Create the release
+        run: |
+          # Skipped when the release is already there, so that a re-run of the
+          # job, after the index step failed, works.
+          if gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
+            echo "the release already exists, leaving it alone"
+          else
+            NOTES=$(python3 extras/changelog_entry.py "${GITHUB_REF_NAME}")
+            PRE=""
+            case "${GITHUB_REF_NAME}" in *-rc*) PRE="--prerelease" ;; esac
+            gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" \
+               --notes "$NOTES" $PRE
+          fi
+          # --clobber replaces an archive of an earlier attempt; the index step
+          # refuses a version that is already published with a different one.
+          gh release upload "${GITHUB_REF_NAME}" "$ARCHIVE" --clobber
+
+      - name: Check out the branch that carries the index
+        run: |
+          # The first release finds no gh-pages branch, and starts one.
+          if git ls-remote --exit-code --heads origin gh-pages > /dev/null; then
+            git clone --quiet --branch gh-pages --single-branch \
+                "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" pages
+          else
+            mkdir pages
+            git -C pages init --quiet --initial-branch gh-pages
+            git -C pages remote add origin \
+                "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          fi
+
+      - name: Add this version to the board manager index
+        run: |
+          python3 extras/update_index.py --index "pages/$INDEX_FILE" \
+              --version "$VERSION" --archive "$ARCHIVE" --pyavrocd "$PYAVROCD" \
+              --url "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${ARCHIVE}"
+
+      - name: Commit and push the index
+        working-directory: pages
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "The index already knew about this version"
+            exit 0
+          fi
+          git commit -m "${GITHUB_REF_NAME}"
+          git push origin gh-pages

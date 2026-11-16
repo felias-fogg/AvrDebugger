@@ -1,0 +1,76 @@
+# AvrDebugger: the debug tools for AVR boards in the Arduino IDE 2
+# ------------------------------------------------------------------
+#
+# This platform installs the debug tools (PyAvrOCD, avr-gdb, simavr) as the tool
+# avr-debugger, for its own boards and for every core that refers to it. Its boards
+# borrow core and variants from arduino:avr (build.core=arduino:arduino), so
+# arduino:avr's platform.txt is inherited; what follows overrides it where debugging
+# needs something else: the optimization flags behind "Optimize for debugging", the
+# #pragma hooks, and the debug configuration.
+#
+# https://arduino.github.io/arduino-cli/latest/platform-specification/
+
+name=AvrDebugger
+version=0.1.0
+
+# {runtime.platform.path} is arduino:avr, not this platform, so that what arduino:avr
+# finds through it -- the bootloaders for "Burn Bootloader" above all -- is found.
+# This platform's own files are reached through {build.board.platform.path}.
+# Needs arduino-cli >= 1.0.4.
+runtime.use_core_platform_path_for_runtime_platform_path=true
+
+# Optimization flags for debugging
+compiler.optimization_flags=-Os -ggdb3 -DNDEBUG -flto "@{build.path}/options.release_flags"
+compiler.optimization_flags.release=-Os -ggdb3 -DNDEBUG -flto "@{build.path}/options.release_flags"
+compiler.optimization_flags.debug=-Og -ggdb3 -DDEBUG "@{build.path}/options.debug_flags"
+
+compiler.c.flags=-c {compiler.warning_flags} -std=gnu11 {compiler.optimization_flags}  -ffunction-sections -fdata-sections -MMD  -fno-fat-lto-objects
+compiler.c.elf.flags={compiler.warning_flags} {compiler.optimization_flags} -fuse-linker-plugin -Wl,--gc-sections
+compiler.S.flags=-c {compiler.optimization_flags}  -x assembler-with-cpp -MMD
+compiler.cpp.flags=-c {compiler.warning_flags} -std=gnu++11 {compiler.optimization_flags}  "@{build.path}/options.cpp_flags" -fpermissive -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics -Wno-error=narrowing -MMD
+
+# Generating options.XXXX_flags using #pragma
+recipe.hooks.prebuild.1.pattern=/bin/bash "{build.board.platform.path}/scripts/pragma.sh" "{compiler.path}{compiler.cpp.cmd}" "{build.source.path}" "{build.path}" "{build.project_name}" debug_flags
+recipe.hooks.prebuild.2.pattern=/bin/bash "{build.board.platform.path}/scripts/pragma.sh" "{compiler.path}{compiler.cpp.cmd}" "{build.source.path}" "{build.path}" "{build.project_name}" release_flags
+recipe.hooks.prebuild.3.pattern=/bin/bash "{build.board.platform.path}/scripts/pragma.sh" "{compiler.path}{compiler.cpp.cmd}" "{build.source.path}" "{build.path}" "{build.project_name}" cpp_flags
+recipe.hooks.prebuild.1.pattern.windows=cmd /C call "{build.board.platform.path}\scripts\pragma.bat" "{compiler.path}{compiler.cpp.cmd}" "{build.source.path}" "{build.path}" "{build.project_name}" debug_flags
+recipe.hooks.prebuild.2.pattern.windows=cmd /C call "{build.board.platform.path}\scripts\pragma.bat" "{compiler.path}{compiler.cpp.cmd}" "{build.source.path}" "{build.path}" "{build.project_name}" release_flags
+recipe.hooks.prebuild.3.pattern.windows=cmd /C call "{build.board.platform.path}\scripts\pragma.bat" "{compiler.path}{compiler.cpp.cmd}" "{build.source.path}" "{build.path}" "{build.project_name}" cpp_flags
+
+# Earlier versions of the debug-enabled Arduino AVR Boards (up to 1.11.0-pre3) generate a
+# launch.json with scripts/launch.sh, which would be inherited and looked for here. An
+# empty pattern switches a hook off; the .windows variant replaces the plain key there.
+recipe.hooks.sketch.prebuild.1.pattern=
+recipe.hooks.sketch.prebuild.1.pattern.windows=
+
+
+# Debugger configuration
+# ----------------------
+debug.executable={build.path}/{build.project_name}.elf
+debug.toolchain=gcc
+debug.toolchain.path={runtime.tools.avr-debugger.path}/bin
+
+debug.server=openocd
+debug.server.openocd.path={debug.toolchain.path}/pyavrocd
+#next doesn't matter, but should be specified so that cortex-debug is happy
+debug.server.openocd.script=nix
+debug.cortex-debug.custom.gdbPath={debug.toolchain.path}/avr-gdb
+debug.cortex-debug.custom.overrideGDBServerStartedRegex=Listening on port \d+ for gdb connection
+debug.cortex-debug.custom.objdumpPath={runtime.tools.avr-gcc.path}/bin/avr-objdump
+# The nop has to be serverArgs.01: the simavr programmer replaces it
+debug.cortex-debug.custom.serverArgs.00=-s
+debug.cortex-debug.custom.serverArgs.01=nop
+debug.cortex-debug.custom.serverArgs.02=--device
+debug.cortex-debug.custom.serverArgs.03={build.mcu}
+debug.cortex-debug.custom.serverArgs.04=--manage
+debug.cortex-debug.custom.serverArgs.05=all
+debug.cortex-debug.custom.serverArgs.06=--F_CPU
+debug.cortex-debug.custom.serverArgs.07={build.f_cpu}
+debug.cortex-debug.custom.serverArgs.08=--prog-clock
+debug.cortex-debug.custom.serverArgs.09=2000
+debug.cortex-debug.custom.serverArgs.10=--elf-file
+debug.cortex-debug.custom.serverArgs.11={debug.executable}
+debug.cortex-debug.custom.serverArgs.12=--arduino-ide
+debug.cortex-debug.custom.preLaunchCommands.0=monitor debugwire enable
+debug.cortex-debug.custom.runToEntryPoint=main
+debug.svd_file={runtime.tools.avr-debugger.path}/svd/{build.mcu}.svd
