@@ -140,7 +140,12 @@ jobs:
           cp "$KIT/avr-gdb.exe" "$KIT/pyavrocd.exe"
           install -m 755 fallback/avr-gdb fallback/pyavrocd "$KIT/"
           # tar, not the artifact's zip: the shell stubs need their x bit.
-          tar -C kit -czf fallback-kit.tar.gz INSTALL-the-AvrDebugger-package
+          # The scripts go first. Unpacked on Windows by an MSYS tar (Git
+          # Bash's), "avr-gdb" and "avr-gdb.exe" count as the same file:
+          # writing the script after the exe deletes the exe first.
+          P=INSTALL-the-AvrDebugger-package/bin
+          tar -C kit -czf fallback-kit.tar.gz \
+              $P/avr-gdb $P/pyavrocd $P/avr-gdb.exe $P/pyavrocd.exe
           tar -tvzf fallback-kit.tar.gz
 
       - name: Check the shell stubs on Linux
@@ -170,19 +175,41 @@ jobs:
           name: fallback-kit
 
       - name: Unpack
-        run: tar -xzf fallback-kit.tar.gz
+        run: |
+          # On Windows with both tars a maintainer might use: Git Bash's (MSYS)
+          # and the one Windows brings. Each has to give all four files.
+          if [ "$RUNNER_OS" = Windows ]; then
+            UNPACKERS="gitbash:tar native:/c/Windows/System32/tar.exe"
+          else
+            UNPACKERS="plain:tar"
+          fi
+          fail=0
+          for u in $UNPACKERS; do
+            d=${u%%:*}; t=${u#*:}
+            mkdir "$d"
+            "$t" -C "$d" -xzf fallback-kit.tar.gz
+            echo "== unpacked with $t"
+            ls -l "$d/INSTALL-the-AvrDebugger-package/bin"
+            n=$(ls "$d/INSTALL-the-AvrDebugger-package/bin" | wc -l)
+            [ "$n" -eq 4 ] || { echo "$t gave $n files instead of 4"; fail=1; }
+            echo "$d" >> dirs.txt
+          done
+          exit $fail
 
       - name: Check the shell stubs
         if: runner.os != 'Windows'
-        run: bash fallback/check.sh INSTALL-the-AvrDebugger-package/bin
+        run: bash fallback/check.sh plain/INSTALL-the-AvrDebugger-package/bin
 
       - name: Check the exe stubs
         if: runner.os == 'Windows'
         run: |
           # Only the exes, so that nothing but them can answer.
-          mkdir exe
-          cp INSTALL-the-AvrDebugger-package/bin/*.exe exe/
-          bash fallback/check.sh exe
+          for d in $(cat dirs.txt); do
+            echo "== $d"
+            mkdir "exe-$d"
+            cp "$d"/INSTALL-the-AvrDebugger-package/bin/*.exe "exe-$d/"
+            bash fallback/check.sh "exe-$d"
+          done
 
       - name: Does a spawn without extension find the exe next to the script?
         if: runner.os == 'Windows'
@@ -190,7 +217,9 @@ jobs:
           # cortex-debug spawns .../bin/avr-gdb without a shell and without
           # ".exe", and in the kit a shell script of that very name lies next
           # to avr-gdb.exe. Node has to start the exe all the same.
-          BIN=$(cygpath -w "$PWD/INSTALL-the-AvrDebugger-package/bin")
+          for d in $(cat dirs.txt); do
+          echo "== $d"
+          BIN=$(cygpath -w "$PWD/$d/INSTALL-the-AvrDebugger-package/bin")
           node -e '
             const cp = require("child_process"), path = require("path");
             const bin = process.argv[1];
@@ -206,6 +235,7 @@ jobs:
             if (!/AvrDebugger package is not installed/.test(text)) { console.log("pyavrocd: no message"); process.exit(1); }
             console.log("both found as .exe without the extension");
           ' "$BIN"
+          done
 
   release:
     name: Publish
