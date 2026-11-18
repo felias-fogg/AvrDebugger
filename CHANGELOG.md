@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.1
+- The fallback kit unpacks into debugger/fallback, and its message points to https://pyavrocd.io.
+
 ## 0.1.0
 
 - First version: the debug tools (PyAvrOCD, avr-gdb, simavr) as the tool
