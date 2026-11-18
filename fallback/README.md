@@ -1,4 +1,4 @@
-# Fallback kit for debug-enabled cores
+# Fallback kit for debug-configured cores
 
 A core that takes its debug tools from AvrDebugger points to them with
 `{runtime.tools.avr-debugger.path}`. When AvrDebugger is not installed, that
