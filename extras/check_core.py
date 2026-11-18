@@ -190,16 +190,18 @@ def check_line_endings(root: str) -> None:
             return
 
 
-def check_release(root: str, platform: dict, tag: str) -> None:
+def check_release(repo: str, platforms: dict, tag: str) -> None:
     """
-    Before a release the version has to be stated in platform.txt and in the
-    changelog. A pre-release tag such as v1.0.0-rc1 is checked against 1.0.0.
+    Before a release the version has to be stated in the platform.txt of every
+    platform and in the changelog. A pre-release tag such as v1.0.0-rc1 is checked
+    against 1.0.0.
     """
     version = base_version(tag)
-    stated = platform.get("version")
-    if stated != version:
-        problem(f"platform.txt says version={stated}, but the tag says {version}")
-    changelog = os.path.join(root, "CHANGELOG.md")
+    for name, platform in platforms.items():
+        stated = platform.get("version")
+        if stated != version:
+            problem(f"{name}/platform.txt says version={stated}, but the tag says {version}")
+    changelog = os.path.join(repo, "CHANGELOG.md")
     if not os.path.exists(changelog):
         problem("there is no CHANGELOG.md, and the release notes come from there")
         return
@@ -209,29 +211,48 @@ def check_release(root: str, platform: dict, tag: str) -> None:
         problem(f"CHANGELOG.md has no entry for {version}")
 
 
+def platform_folders(repo: str) -> list:
+    """The platforms of the package: every folder of the repository with a platform.txt"""
+    return sorted(entry for entry in os.listdir(repo)
+                  if os.path.isfile(os.path.join(repo, entry, "platform.txt")))
+
+
 def main() -> int:
     """Run every check and report what came out of it."""
     parser = argparse.ArgumentParser(description="check AvrDebugger for consistency")
-    parser.add_argument("--root", help="the core's folder (default: the one above this)")
+    parser.add_argument("--root", help="the repository (default: the one above this); "
+                        "a platform folder in it, as release.sh passes, means the same")
     parser.add_argument("--tag", help="also check that the core is ready for this tag")
     args = parser.parse_args()
 
-    root = args.root or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    boards = properties(os.path.join(root, "boards.txt"))
-    platform = properties(os.path.join(root, "platform.txt"))
-    programmers = properties(os.path.join(root, "programmers.txt"))
-    print(f"checking {root}")
-    print(f"  {len(all_board_ids(boards))} boards, {len(board_ids(boards))} of them "
-          f"visible, {len(platform)} platform properties")
-
-    check_boards(boards)
-    check_server_args("platform.txt", platform)
-    check_server_args("programmers.txt", programmers)
-    check_debug(platform)
-    check_hook_scripts(root, platform)
-    check_line_endings(root)
+    repo = os.path.abspath(args.root or os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if os.path.isfile(os.path.join(repo, "platform.txt")):
+        repo = os.path.dirname(repo)        # release.sh names avr/, the platforms live beside it
+    folders = platform_folders(repo)
+    if not folders:
+        problem(f"no platform folder (with a platform.txt) in {repo}")
+    platforms = {}
+    for name in folders:
+        root = os.path.join(repo, name)
+        boards = properties(os.path.join(root, "boards.txt"))
+        platform = properties(os.path.join(root, "platform.txt"))
+        programmers = properties(os.path.join(root, "programmers.txt"))
+        platforms[name] = platform
+        print(f"checking {name}")
+        print(f"  {len(all_board_ids(boards))} boards, {len(board_ids(boards))} of them "
+              f"visible, {len(platform)} platform properties")
+        check_boards(boards)
+        check_server_args(f"{name}/platform.txt", platform)
+        check_server_args(f"{name}/programmers.txt", programmers)
+        check_debug(platform)
+        check_hook_scripts(root, platform)
+    versions = {platform.get("version") for platform in platforms.values()}
+    if len(versions) > 1:
+        problem("the platforms state different versions: " +
+                ", ".join(f"{n} {p.get('version')}" for n, p in platforms.items()))
+    check_line_endings(repo)
     if args.tag:
-        check_release(root, platform, args.tag)
+        check_release(repo, platforms, args.tag)
 
     for text in WARNINGS:
         print(f"  warning: {text}")
@@ -242,7 +263,6 @@ def main() -> int:
         return 1
     print("no problems found")
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())

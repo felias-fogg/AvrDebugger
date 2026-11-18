@@ -10,9 +10,13 @@
 # main, a pull request or a run started by hand goes through the core check and
 # the builds and stops there.
 #
-# Laid out like XMiniCore's workflow. What differs: the platform archive is
+# Laid out like XMiniCore's workflow. What differs: the platform archives are
 # attached to the GitHub release instead of being committed to gh-pages, and one
 # Python script (extras/update_index.py) writes the index, tools included.
+#
+# The package has two platforms, one folder each, released together under one
+# version: avr/ (AvrDebugger, borrowing from arduino:avr) and megaavr/
+# (megaAvrDebugger, borrowing from arduino:megaavr). They share the tools.
 
 name: Release
 
@@ -84,11 +88,13 @@ jobs:
           arduino-cli config init --overwrite
           arduino-cli config set directories.user "$SKETCHBOOK"
           mkdir -p "$SKETCHBOOK/hardware/AvrDebugger"
-          cp -r AvrDebugger "$SKETCHBOOK/hardware/AvrDebugger/avr"
+          cp -r AvrDebugger/avr "$SKETCHBOOK/hardware/AvrDebugger/avr"
+          cp -r AvrDebugger/megaavr "$SKETCHBOOK/hardware/AvrDebugger/megaavr"
           arduino-cli core update-index
-          # The boards borrow core and variants from arduino:avr, and its
-          # platform.txt is what this one overrides.
+          # The boards borrow core and variants from arduino:avr and
+          # arduino:megaavr, and their platform.txt is what these override.
           arduino-cli core install arduino:avr
+          arduino-cli core install arduino:megaavr
           arduino-cli core list
 
       - name: Compile
@@ -96,12 +102,19 @@ jobs:
           # The compile recipes are inherited, so compile_all.py does not see
           # that the cpu menu matters (it sets build.mcu); name it.
           python AvrDebugger/extras/compile_all.py --fqbn-prefix AvrDebugger:avr \
+                 --root AvrDebugger/avr \
                  --menus cpu --work-dir "$HOME/work with blank" --timeout 300
+          # megaavr: the mode menu (ATmega328 register emulation) sets a define
+          python AvrDebugger/extras/compile_all.py --fqbn-prefix AvrDebugger:megaavr \
+                 --root AvrDebugger/megaavr \
+                 --menus mode --work-dir "$HOME/work with blank" --timeout 300
 
       - name: Check that the prebuild hook picks up the pragmas
         run: |
           python AvrDebugger/extras/check_hooks.py --fqbn AvrDebugger:avr:uno \
-                 --work-dir "$HOME/work with blank"
+                 --root AvrDebugger/avr --work-dir "$HOME/work with blank"
+          python AvrDebugger/extras/check_hooks.py --fqbn AvrDebugger:megaavr:uno2018 \
+                 --root AvrDebugger/megaavr --work-dir "$HOME/work with blank"
 
       - name: Check that "Optimize for debugging" reaches the compiler
         run: |
@@ -110,15 +123,17 @@ jobs:
           SKETCH="$HOME/work with blank/opt_probe"
           mkdir -p "$SKETCH"
           printf 'void setup() { }\nvoid loop() { }\n' > "$SKETCH/opt_probe.ino"
-          arduino-cli compile -v --clean --optimize-for-debug -b AvrDebugger:avr:uno \
-                 "$SKETCH" > debug.log 2>&1 || { cat debug.log; exit 1; }
-          arduino-cli compile -v --clean -b AvrDebugger:avr:uno \
-                 "$SKETCH" > release.log 2>&1 || { cat release.log; exit 1; }
-          grep 'opt_probe.ino.cpp.o' debug.log   | grep -q -- ' -Og ' \
-            || { echo "--optimize-for-debug did not give -Og"; exit 1; }
-          grep 'opt_probe.ino.cpp.o' release.log | grep -q -- ' -Os ' \
-            || { echo "a release build did not give -Os"; exit 1; }
-          echo "-Og with, -Os without"
+          for FQBN in AvrDebugger:avr:uno AvrDebugger:megaavr:uno2018; do
+            arduino-cli compile -v --clean --optimize-for-debug -b "$FQBN" \
+                   "$SKETCH" > debug.log 2>&1 || { cat debug.log; exit 1; }
+            arduino-cli compile -v --clean -b "$FQBN" \
+                   "$SKETCH" > release.log 2>&1 || { cat release.log; exit 1; }
+            grep 'opt_probe.ino.cpp.o' debug.log   | grep -q -- ' -Og ' \
+              || { echo "$FQBN: --optimize-for-debug did not give -Og"; exit 1; }
+            grep 'opt_probe.ino.cpp.o' release.log | grep -q -- ' -Os ' \
+              || { echo "$FQBN: a release build did not give -Os"; exit 1; }
+            echo "$FQBN: -Og with, -Os without"
+          done
 
   fallback-build:
     # The kit the other cores carry in debugger/fallback: stubs
@@ -255,6 +270,7 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           ARCHIVE="AvrDebugger-${VERSION}.tar.bz2"
+          MEGA_ARCHIVE="megaAvrDebugger-${VERSION}.tar.bz2"
           # Release candidates go into an index of their own, so the board
           # manager of an ordinary user never offers them. They may depend on a
           # PyAvrOCD pre-release; a real release only on a real one.
@@ -265,18 +281,30 @@ jobs:
           {
             echo "VERSION=$VERSION"
             echo "ARCHIVE=$ARCHIVE"
+            echo "MEGA_ARCHIVE=$MEGA_ARCHIVE"
             echo "INDEX_FILE=$INDEX"
             echo "PYAVROCD=$PYAVROCD"
           } >> "$GITHUB_ENV"
-          echo "$ARCHIVE goes into $INDEX, with the $PYAVROCD PyAvrOCD"
+          echo "$ARCHIVE and $MEGA_ARCHIVE go into $INDEX, with the $PYAVROCD PyAvrOCD"
 
-      - name: Pack the platform
+      - name: Pack the platforms
         run: |
-          # git archive leaves out what .gitattributes marks export-ignore:
-          # .github and extras are not part of what the board manager installs.
-          git archive --format=tar --prefix="AvrDebugger-${VERSION}/" HEAD \
-            | bzip2 -9 > "$ARCHIVE"
-          tar tjf "$ARCHIVE"
+          # Each archive is a platform folder, plus LICENSE, README.md and
+          # CHANGELOG.md from the top, as committed (git archive, not the working
+          # tree). extras, .github and the fallback kit stay out.
+          pack() {   # <folder> <name in the archive> <archive>
+            rm -rf stage && mkdir -p "stage/$2"
+            git archive --format=tar HEAD:"$1" | tar -x -C "stage/$2"
+            git archive --format=tar HEAD LICENSE README.md CHANGELOG.md | tar -x -C "stage/$2"
+            tar -C stage -cjf "$3" "$2"
+            echo "== $3"
+            tar tjf "$3"
+            for f in platform.txt boards.txt LICENSE; do
+              tar tjf "$3" | grep -q "^$2/$f$" || { echo "$3 lacks $f"; exit 1; }
+            done
+          }
+          pack avr "AvrDebugger-${VERSION}" "$ARCHIVE"
+          pack megaavr "megaAvrDebugger-${VERSION}" "$MEGA_ARCHIVE"
 
       - name: Create the release
         run: |
@@ -293,7 +321,7 @@ jobs:
           fi
           # --clobber replaces an archive of an earlier attempt; the index step
           # refuses a version that is already published with a different one.
-          gh release upload "${GITHUB_REF_NAME}" "$ARCHIVE" --clobber
+          gh release upload "${GITHUB_REF_NAME}" "$ARCHIVE" "$MEGA_ARCHIVE" --clobber
           # The fallback kit for the other cores, the archive tested above. The
           # asset takes the file's own name, so rename it first.
           mv fallback-kit.tar.gz "AvrDebugger-fallback-${VERSION}.tar.gz"
@@ -314,9 +342,15 @@ jobs:
 
       - name: Add this version to the board manager index
         run: |
+          BASE="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}"
           python3 extras/update_index.py --index "pages/$INDEX_FILE" \
+              --root avr --name AvrDebugger \
               --version "$VERSION" --archive "$ARCHIVE" --pyavrocd "$PYAVROCD" \
-              --url "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${ARCHIVE}"
+              --url "${BASE}/${ARCHIVE}"
+          python3 extras/update_index.py --index "pages/$INDEX_FILE" \
+              --root megaavr --name megaAvrDebugger \
+              --version "$VERSION" --archive "$MEGA_ARCHIVE" --pyavrocd "$PYAVROCD" \
+              --url "${BASE}/${MEGA_ARCHIVE}"
 
       - name: Commit and push the index
         working-directory: pages

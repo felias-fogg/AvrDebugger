@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
-Add a release of AvrDebugger to the board manager index, together with the tools
-it depends on.
+Add one platform of a release of AvrDebugger to the board manager index, together
+with the tools it depends on. The package has a platform per architecture (avr,
+megaavr), one folder each; a release calls this once per platform:
 
     python3 extras/update_index.py --index pages/package_felias-fogg_AvrDebugger_index.json \\
-        --version 1.0.0 --archive AvrDebugger-1.0.0.tar.bz2 \\
+        --root avr --name AvrDebugger --version 1.0.0 --archive AvrDebugger-1.0.0.tar.bz2 \\
         --url https://github.com/felias-fogg/AvrDebugger/releases/download/v1.0.0/AvrDebugger-1.0.0.tar.bz2
 
-The platform depends on two tools of its own packager: avr-debugger (PyAvrOCD,
+Every platform depends on two tools of its own packager: avr-debugger (PyAvrOCD,
 avr-gdb and simavr, from the PyAvrOCD release) and avrdude (from the avrdude
-release). The compiler is deliberately not among them: it comes from arduino:avr,
-whose core the boards use anyway. Each tool is added to the index when that version
-is not there yet; size and checksum come from the GitHub API, which reports a
+release). The avr platform does not name the compiler: it comes from arduino:avr,
+whose core the boards use anyway. The others name arduino's avr-gcc (AVR_GCC), so
+that the toolchain does not depend on what else is installed. Each tool is added to
+the index once, when that version is not there yet; size and checksum come from the GitHub API, which reports a
 SHA-256 for every release asset, so nothing has to be downloaded for them.
 
 Running it twice for the same version changes nothing. A version that is in the
@@ -35,6 +37,7 @@ from check_core import properties, board_ids    # pylint: disable=wrong-import-p
 
 PACKAGER = "AvrDebugger"
 OWNER = "felias-fogg"
+AVR_GCC = "7.3.0-atmel3.6.1-arduino7"     # the one arduino:avr 1.8.x depends on
 
 # avrdude's own archive names and the hosts arduino-cli knows them by. There is no
 # arm64 macOS and no 64-bit Windows archive in this form: arduino-cli then takes
@@ -153,17 +156,21 @@ def add_tool(pkg: dict, tool: dict) -> None:
 
 
 def add_platform(pkg: dict, entry: dict) -> None:
-    """Add the platform version; the same one again is fine, a different one is not."""
+    """
+    Add the platform version; the same one again is fine, a different one is not. A
+    platform is known by its architecture and version: avr and megaavr of one release
+    share the version.
+    """
     for known in pkg["platforms"]:
-        if known["version"] == entry["version"]:
+        if known["architecture"] == entry["architecture"] and known["version"] == entry["version"]:
             if known["checksum"] == entry["checksum"]:
-                print(f"AvrDebugger {entry['version']} is in the index already")
+                print(f"{entry['name']} {entry['version']} is in the index already")
                 return
-            sys.exit(f"AvrDebugger {entry['version']} is in the index already, with a "
-                     "different archive. A published version is not replaced; "
-                     "release a new one.")
+            sys.exit(f"{entry['name']} {entry['version']} ({entry['architecture']}) is in the "
+                     "index already, with a different archive. A published version is not "
+                     "replaced; release a new one.")
     pkg["platforms"].append(entry)
-    print(f"added AvrDebugger {entry['version']}")
+    print(f"added {entry['name']} {entry['version']} ({entry['architecture']})")
 
 
 def main() -> int:
@@ -176,10 +183,13 @@ def main() -> int:
     parser.add_argument("--pyavrocd", default="latest",
                         help="PyAvrOCD release tag, 'latest' (default) or 'newest'")
     parser.add_argument("--avrdude", default="latest", help="avrdude release tag or 'latest'")
-    parser.add_argument("--root", help="the core's folder (default: the one above this)")
+    parser.add_argument("--root", required=True,
+                        help="the platform folder (avr or megaavr), whose name is the architecture")
+    parser.add_argument("--name", required=True, help="the name in the board manager")
     args = parser.parse_args()
 
-    root = args.root or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    root = os.path.abspath(args.root)
+    architecture = os.path.basename(root)
     boards = properties(os.path.join(root, "boards.txt"))
 
     if os.path.exists(args.index):
@@ -194,11 +204,22 @@ def main() -> int:
     add_tool(pkg, debugger)
     add_tool(pkg, avrdude)
 
+    dependencies = [
+        {"packager": PACKAGER, "name": "avrdude", "version": avrdude["version"]},
+        {"packager": PACKAGER, "name": "avr-debugger", "version": debugger["version"]},
+    ]
+    if architecture != "avr":
+        # avr gets the compiler of arduino:avr, which its boards use anyway; the others
+        # name the same one, so that the toolchain does not depend on what else is
+        # installed (without it, arduino:megaavr would bring the older arduino5)
+        dependencies.insert(0, {"packager": "arduino", "name": "avr-gcc",
+                                "version": AVR_GCC})
+
     with open(args.archive, "rb") as src:
         data = src.read()
     add_platform(pkg, {
-        "name": "AvrDebugger",
-        "architecture": "avr",
+        "name": args.name,
+        "architecture": architecture,
         "version": args.version,
         "category": "Contributed",
         "url": args.url,
@@ -206,10 +227,7 @@ def main() -> int:
         "checksum": "SHA-256:" + hashlib.sha256(data).hexdigest(),
         "size": str(len(data)),
         "boards": [{"name": boards[f"{b}.name"]} for b in board_ids(boards)],
-        "toolsDependencies": [
-            {"packager": PACKAGER, "name": "avrdude", "version": avrdude["version"]},
-            {"packager": PACKAGER, "name": "avr-debugger", "version": debugger["version"]},
-        ],
+        "toolsDependencies": dependencies,
     })
 
     with open(args.index, "w", encoding="utf-8") as out:

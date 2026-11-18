@@ -2,7 +2,7 @@
 
 Install AvrDebugger if you want to use a debugger with some of the more recent versions of, e.g., XMiniCore, TinyCore (see the [list of debug-capable board packages](https://pyavrocd.io/latest/supporting-packages/)). If the Arduino IDE says in its gdb-server terminal that the AvrDebugger package is not installed, or reports that it could not start `…/bin/avr-gdb`, this package is what is missing.
 
-In addition, AvrDebugger lets you debug the classic Arduino AVR boards -- Uno, Nano, Pro Mini, Mega, and Leonardo -- in the Arduino IDE 2: set breakpoints, step through the sketch, and look at variables and registers. 
+In addition, AvrDebugger lets you debug the classic Arduino AVR boards -- Uno, Nano, Pro Mini, Mega, and Leonardo -- in the Arduino IDE 2: set breakpoints, step through the sketch, and look at variables and registers. Its companion *megaAvrDebugger*, part of the same package, does the same for the [Nano Every and the Uno WiFi Rev2](#megaavrdebugger-nano-every-and-uno-wifi-rev2).
 
 The boards are the ones of *Arduino AVR Boards*. AvrDebugger uses their core and variants unchanged, so a sketch behaves exactly as it does there. What it adds:
 
@@ -29,6 +29,19 @@ micro.hide=false
 
 Note that the boards.local.txt file will be overwritten when a new version of AvrDebugger gets installed.
 
+## megaAvrDebugger: Nano Every and Uno WiFi Rev2
+
+The package contains a second platform, *megaAvrDebugger*, for the boards of *Arduino megaAVR Boards*, built the same way: it uses their core and variants unchanged and adds the debug configuration, `Optimize for Debugging`, the pragma directives, a current avrdude, and the UPDI programmers. The debug tools are the same ones; if you install both platforms, they are installed only once.
+
+| Board in the menu                    | MCU        | Debug interface |
+| ------------------------------------ | ---------- | --------------- |
+| Arduino Nano Every (debug)           | ATmega4809 | UPDI            |
+| Arduino Uno WiFi Rev2 (debug)        | ATmega4809 | UPDI            |
+
+The Uno WiFi Rev2 has a debug probe on board (mEDBG): connect it by USB, and you can debug right away. The Nano Every has none -- its USB chip only programs the MCU -- so it needs an external UPDI probe connected to the UPDI pad on the back of the board.
+
+megaAvrDebugger needs *Arduino megaAVR Boards*, and is installed from the same URL as AvrDebugger: search for `AvrDebugger` in the Boards Manager and install `megaAvrDebugger`. With arduino-cli, it is `AvrDebugger:megaavr`.
+
 ## Installation
 
 AvrDebugger needs *Arduino AVR Boards*. The IDE offers to install it when you first connect an Uno; otherwise, install it with the Boards Manager.
@@ -48,6 +61,8 @@ With arduino-cli:
 ```
 arduino-cli core install AvrDebugger:avr --additional-urls https://felias-fogg.github.io/AvrDebugger/package_felias-fogg_AvrDebugger_index.json
 ```
+
+(`AvrDebugger:megaavr` for megaAvrDebugger.)
 
 AvrDebugger is meant for the Arduino IDE 2; the IDE 1.8.x has no debugger. The `(debug)` boards compile and upload in the IDE 1.8.x as well, but `Tools -> Burn Bootloader` does not work there: use the corresponding board of *Arduino AVR Boards* for that.
 
@@ -78,6 +93,8 @@ AvrDebugger adds the following programmers to those of Arduino AVR Boards:
 
 JTAG modes only work for the Mega and the Leonardo.
 
+megaAvrDebugger has its own programmers for UPDI: the onboard mEDBG of the Uno WiFi Rev2, `Curiosity Nano`, and the UPDI modes of `Atmel-ICE`, `Power Debugger`, `JTAGICE3`, `PICkit 4`, `PICkit 5`, and `MPLAB SNAP`. There is no simulator for these boards.
+
 ## Pragma directives
 
 As in [TinyCore](https://github.com/MCUdude/TinyCore), build flags can be given in the sketch:
@@ -92,4 +109,4 @@ As in [TinyCore](https://github.com/MCUdude/TinyCore), build flags can be given 
 
 ## License
 
-The board definitions come from [Arduino AVR Boards](https://github.com/arduino/ArduinoCore-avr) and are, like the rest of this package, licensed under the GNU Lesser General Public License 2.1; see [LICENSE](LICENSE). The debug tools are licensed separately: PyAvrOCD under MIT, avr-gdb and simavr under the GPL.
+The board definitions come from [Arduino AVR Boards](https://github.com/arduino/ArduinoCore-avr) and [Arduino megaAVR Boards](https://github.com/arduino/ArduinoCore-megaavr) and are, like the rest of this package, licensed under the GNU Lesser General Public License 2.1; see [LICENSE](LICENSE). The debug tools are licensed separately: PyAvrOCD under MIT, avr-gdb and simavr under the GPL.

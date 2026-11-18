@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0
+
+- A second platform in the package: *megaAvrDebugger* (`AvrDebugger:megaavr`) for the
+  Nano Every and the Uno WiFi Rev2, with core and variants from Arduino megaAVR Boards,
+  avrdude 8.3 instead of its 6.3, the UPDI programmers, and the same debug tools.
+- The repository has a folder per platform, `avr/` and `megaavr/`; each release
+  attaches two archives, `AvrDebugger-<version>.tar.bz2` and
+  `megaAvrDebugger-<version>.tar.bz2`.
+
 ## 0.1.1
 - The fallback kit unpacks into debugger/fallback, and its message points to https://pyavrocd.io.
 
