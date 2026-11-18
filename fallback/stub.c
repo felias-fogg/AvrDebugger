@@ -14,11 +14,13 @@
 #include <ctype.h>
 
 static const char MESSAGE[] =
-    "*** The AvrDebugger package is not installed. ***\n"
-    "Debugging needs it: add\n"
-    "  https://felias-fogg.github.io/AvrDebugger/package_felias-fogg_AvrDebugger_index.json\n"
-    "to Additional Boards Manager URLs (File > Preferences) and install AvrDebugger\n"
-    "with the Boards Manager.\n";
+    "\n"
+    "                    *** The AvrDebugger package is not installed. ***\n"
+    "Add the following URL to Additional Boards Manager URLs (File > Preferences):\n"
+    "https://felias-fogg.github.io/AvrDebugger/package_felias-fogg_AvrDebugger_index.json\n"
+    "and install AvrDebugger with the Boards Manager. Consult https://pyavrocd.io\n"
+    "for information concerning debugging Arduino sketches on AVR hardware.\n"
+    "\n";
 
 static int as_gdb(void)
 {
