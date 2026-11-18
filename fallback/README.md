@@ -5,14 +5,18 @@ A core that takes its debug tools from AvrDebugger points to them with
 variable is not set, and the core's `platform.txt` supplies a folder of its own:
 
 ```
-runtime.tools.avr-debugger.path={runtime.platform.path}/INSTALL-the-AvrDebugger-package
+runtime.tools.avr-debugger.path={runtime.platform.path}/debugger/fallback
 ```
 
-This kit fills that folder with stubs. When the user clicks Debug, the IDE
+This kit fills that folder with stubs, in `bin/` as in the real tool, since
+the core appends `/bin` for the programs. When the user clicks Debug, the IDE
 then brings its gdb-server terminal to the front, and there the user reads
 what to install (`message.txt`). Without the stubs, the IDE only shows a
-popup saying that `…/INSTALL-the-AvrDebugger-package/bin/avr-gdb` could not
-be started.
+popup saying that `…/debugger/fallback/bin/avr-gdb` could not be started.
+
+`debugger/` is where some of the official Arduino cores keep their debug
+configuration files. Cores released with the kit of AvrDebugger 0.1.0 have
+it in `INSTALL-the-AvrDebugger-package` instead; that works the same way.
 
 ## Using it in a core
 
@@ -21,7 +25,7 @@ Unpack it in the root folder of the core and commit the result:
 
 ```
 tar -xzf AvrDebugger-fallback-<version>.tar.gz
-git add INSTALL-the-AvrDebugger-package
+git add debugger/fallback
 ```
 
 The folder then holds `bin/avr-gdb` and `bin/pyavrocd` (shell scripts for
@@ -31,8 +35,8 @@ macOS and Linux, committed executable) and `bin/avr-gdb.exe` and
 should keep the two scripts at LF:
 
 ```
-INSTALL-the-AvrDebugger-package/bin/avr-gdb  text eol=lf
-INSTALL-the-AvrDebugger-package/bin/pyavrocd text eol=lf
+debugger/fallback/bin/avr-gdb  text eol=lf
+debugger/fallback/bin/pyavrocd text eol=lf
 ```
 
 ## How the stubs work

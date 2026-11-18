@@ -1,6 +1,6 @@
 # AvrDebugger
 
-Install AvrDebugger if you want to use a debugger with some of the more recent versions of, e.g., XMiniCore, TinyCore (see the [list of debug-enabled board packages](https://pyavrocd.io/latest/supporting-packages/)). If the Arduino IDE says in its gdb-server terminal that the AvrDebugger package is not installed, or reports that it could not start the debugger located at `…/INSTALL-the-AvrDebugger-package/bin/avr-gdb`, this package is what is missing.
+Install AvrDebugger if you want to use a debugger with some of the more recent versions of, e.g., XMiniCore, TinyCore (see the [list of debug-enabled board packages](https://pyavrocd.io/latest/supporting-packages/)). If the Arduino IDE says in its gdb-server terminal that the AvrDebugger package is not installed, or reports that it could not start `…/bin/avr-gdb`, this package is what is missing.
 
 In addition, AvrDebugger lets you debug the classic Arduino AVR boards -- Uno, Nano, Pro Mini, Mega, and Leonardo -- in the Arduino IDE 2: set breakpoints, step through the sketch, and look at variables and registers. 
 

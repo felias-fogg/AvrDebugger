@@ -121,7 +121,7 @@ jobs:
           echo "-Og with, -Os without"
 
   fallback-build:
-    # The kit the other cores carry in INSTALL-the-AvrDebugger-package: stubs
+    # The kit the other cores carry in debugger/fallback: stubs
     # that stand in for avr-gdb and pyavrocd when AvrDebugger is not installed,
     # and tell the user so in the gdb-server terminal (see fallback/README.md).
     # Built once here; the tests below and the release use this very archive.
@@ -133,7 +133,7 @@ jobs:
       - name: Build the Windows stub and pack the kit
         run: |
           sudo apt-get install -y -qq gcc-mingw-w64-x86-64 > /dev/null
-          KIT=kit/INSTALL-the-AvrDebugger-package/bin
+          KIT=kit/debugger/fallback/bin
           mkdir -p "$KIT"
           x86_64-w64-mingw32-gcc -std=c99 -Wall -Wextra -Werror -Os -s \
               -o "$KIT/avr-gdb.exe" fallback/stub.c
@@ -143,7 +143,7 @@ jobs:
           # The scripts go first. Unpacked on Windows by an MSYS tar (Git
           # Bash's), "avr-gdb" and "avr-gdb.exe" count as the same file:
           # writing the script after the exe deletes the exe first.
-          P=INSTALL-the-AvrDebugger-package/bin
+          P=debugger/fallback/bin
           tar -C kit -czf fallback-kit.tar.gz \
               $P/avr-gdb $P/pyavrocd $P/avr-gdb.exe $P/pyavrocd.exe
           tar -tvzf fallback-kit.tar.gz
@@ -189,8 +189,8 @@ jobs:
             mkdir "$d"
             "$t" -C "$d" -xzf fallback-kit.tar.gz
             echo "== unpacked with $t"
-            ls -l "$d/INSTALL-the-AvrDebugger-package/bin"
-            n=$(ls "$d/INSTALL-the-AvrDebugger-package/bin" | wc -l)
+            ls -l "$d/debugger/fallback/bin"
+            n=$(ls "$d/debugger/fallback/bin" | wc -l)
             [ "$n" -eq 4 ] || { echo "$t gave $n files instead of 4"; fail=1; }
             echo "$d" >> dirs.txt
           done
@@ -198,7 +198,7 @@ jobs:
 
       - name: Check the shell stubs
         if: runner.os != 'Windows'
-        run: bash fallback/check.sh plain/INSTALL-the-AvrDebugger-package/bin
+        run: bash fallback/check.sh plain/debugger/fallback/bin
 
       - name: Check the exe stubs
         if: runner.os == 'Windows'
@@ -207,7 +207,7 @@ jobs:
           for d in $(cat dirs.txt); do
             echo "== $d"
             mkdir "exe-$d"
-            cp "$d"/INSTALL-the-AvrDebugger-package/bin/*.exe "exe-$d/"
+            cp "$d"/debugger/fallback/bin/*.exe "exe-$d/"
             bash fallback/check.sh "exe-$d"
           done
 
@@ -219,7 +219,7 @@ jobs:
           # to avr-gdb.exe. Node has to start the exe all the same.
           for d in $(cat dirs.txt); do
           echo "== $d"
-          BIN=$(cygpath -w "$PWD/$d/INSTALL-the-AvrDebugger-package/bin")
+          BIN=$(cygpath -w "$PWD/$d/debugger/fallback/bin")
           node -e '
             const cp = require("child_process"), path = require("path");
             const bin = process.argv[1];
