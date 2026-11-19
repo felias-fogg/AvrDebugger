@@ -86,6 +86,80 @@
               "version": "2.0.0"
             }
           ]
+        },
+        {
+          "name": "AvrDebugger",
+          "architecture": "avr",
+          "version": "0.2.0",
+          "category": "Contributed",
+          "url": "https://github.com/felias-fogg/AvrDebugger/releases/download/v0.2.0/AvrDebugger-0.2.0.tar.bz2",
+          "archiveFileName": "AvrDebugger-0.2.0.tar.bz2",
+          "checksum": "SHA-256:13d538c0c3b184c4617c4c6a963b5efda90b2c574a4c37b1c2efc5ffb9cf94e8",
+          "size": "21813",
+          "boards": [
+            {
+              "name": "Arduino Leonardo (debug)"
+            },
+            {
+              "name": "Arduino Mega or Mega 2560 (debug)"
+            },
+            {
+              "name": "Arduino Nano (debug)"
+            },
+            {
+              "name": "Arduino Pro or Pro Mini (debug)"
+            },
+            {
+              "name": "Arduino UNO (debug)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "AvrDebugger",
+              "name": "avrdude",
+              "version": "8.3"
+            },
+            {
+              "packager": "AvrDebugger",
+              "name": "avr-debugger",
+              "version": "2.0.0"
+            }
+          ]
+        },
+        {
+          "name": "megaAvrDebugger",
+          "architecture": "megaavr",
+          "version": "0.2.0",
+          "category": "Contributed",
+          "url": "https://github.com/felias-fogg/AvrDebugger/releases/download/v0.2.0/megaAvrDebugger-0.2.0.tar.bz2",
+          "archiveFileName": "megaAvrDebugger-0.2.0.tar.bz2",
+          "checksum": "SHA-256:d8f682fee362793c7f277d5d3319d9a44c39d861565a799a2be11507ed32220d",
+          "size": "16712",
+          "boards": [
+            {
+              "name": "Arduino Nano Every (debug)"
+            },
+            {
+              "name": "Arduino Uno WiFi Rev2 (debug)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "arduino",
+              "name": "avr-gcc",
+              "version": "7.3.0-atmel3.6.1-arduino7"
+            },
+            {
+              "packager": "AvrDebugger",
+              "name": "avrdude",
+              "version": "8.3"
+            },
+            {
+              "packager": "AvrDebugger",
+              "name": "avr-debugger",
+              "version": "2.0.0"
+            }
+          ]
         }
       ],
       "tools": [
