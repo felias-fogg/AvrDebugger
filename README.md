@@ -44,9 +44,9 @@ megaAvrDebugger needs *Arduino megaAVR Boards*, and is installed from the same U
 
 ## Installation
 
-AvrDebugger needs *Arduino AVR Boards*. The IDE offers to install it when you first connect an Uno; otherwise, install it with the Boards Manager.
+AvrDebugger needs *Arduino AVR Boards*. The IDE offers to install it when you first connect an Uno; otherwise, install it with the Boards Manager. MegaAvrDebugger needs *Arduino megaAVR Boards*, which can be installed with the Boards Manager.
 
-Install *AvrDebugger* as follows:
+Install *AvrDebugger* and/or `megaAvrDebugger` as follows:
 
 - Open `File -> Preferences` and enter the following URL in `Additional Boards Manager URLs`:
 
@@ -54,7 +54,7 @@ Install *AvrDebugger* as follows:
   https://felias-fogg.github.io/AvrDebugger/package_felias-fogg_AvrDebugger_index.json
   ```
 
-- Open the Boards Manager (`Tools -> Board -> Boards Manager...`), search for `AvrDebugger`, and click `Install`.
+- Open the Boards Manager (`Tools -> Board -> Boards Manager...`), search for `AvrDebugger` or `megaAvrDebugger`, and click `Install`.
 
 With arduino-cli:
 
@@ -64,13 +64,13 @@ arduino-cli core install AvrDebugger:avr --additional-urls https://felias-fogg.g
 
 (`AvrDebugger:megaavr` for megaAvrDebugger.)
 
-AvrDebugger is meant for the Arduino IDE 2; the IDE 1.8.x has no debugger. The `(debug)` boards compile and upload in the IDE 1.8.x as well, but `Tools -> Burn Bootloader` does not work there: use the corresponding board of *Arduino AVR Boards* for that.
+AvrDebugger and megaAvrDebugger are meant for the Arduino IDE 2; the IDE 1.8.x has no debugger. The `(debug)` boards compile and upload in the IDE 1.8.x as well, but `Tools -> Burn Bootloader` does not work there: use the corresponding board of *Arduino (mega)AVR Boards* for that.
 
 ## Getting started
 
-1. **Prepare the board.** debugWIRE boards need a hardware change on the RESET line; on an Uno, this means cutting the `RESET EN` solder bridge. JTAG boards need the JTAG pins enabled by a fuse: select `JTAG enabled` in `Tools -> JTAG pins` and use `Tools -> Burn Bootloader` with an ISP programmer. The [board preparation](https://pyavrocd.io/latest/board-preparation/) page has the details for each board.
+1. **Prepare the board.** debugWIRE boards need a hardware change on the RESET line; on an Uno, this means cutting the `RESET EN` solder bridge. JTAG boards need the JTAG pins enabled by a fuse: select `JTAG enabled` in `Tools -> JTAG pins` and use `Tools -> Burn Bootloader` with an ISP programmer. The [board preparation](https://pyavrocd.io/latest/board-preparation/) page has the details for each board. UPDI boards do not need anything special.
 2. **Connect a debug probe** -- see the [list of supported probes](https://pyavrocd.io/latest/supported-debuggers/). If you have none, a second Uno running [dw-link](https://github.com/felias-fogg/dw-link) will do for the debugWIRE boards.
-3. **Select the board** under `Tools -> Board -> AvrDebugger`.
+3. **Select the board** under `Tools -> Board -> AvrDebugger` or `Tools -> Board -> megaAvrDebugger`. 
 4. **Select `Sketch -> Optimize for Debugging`.** The code gets a bit bigger, but the optimizer will not disturb the structure of the program.
 5. **Click the** **`Verify`** **button.** This will compile the program. This is always necessary after a change to the source code, since otherwise the debugger will load the old binary. 
 6. **Click the `Debug` button.** Debugging is started, and on debugWIRE MCUs, you may be asked to power-cycle (remove and replug power or USB) the MCU. The sketch is uploaded, and execution stops at the beginning of `main`.
@@ -81,7 +81,7 @@ On debugWIRE boards, the RESET line cannot be used while debugging, and neither 
 
 ### Without hardware
 
-Select `Tools -> Programmer -> Simulator (simavr)`, and the `Debug` button starts the sketch in a simulated MCU instead.
+Select `Tools -> Programmer -> Simulator (simavr)`, and the `Debug` button starts the sketch in a simulated MCU instead (this does not work with UPDI targets).
 
 ## Programmers
 
