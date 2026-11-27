@@ -9,7 +9,7 @@
 # https://arduino.github.io/arduino-cli/latest/platform-specification/
 
 name=megaAvrDebugger
-version=0.2.0
+version=0.2.1
 
 # {runtime.platform.path} is arduino:megaavr, not this platform, so that what arduino:megaavr finds
 # through it -- bootloaders and fuse files -- is found. This platform's own files are reached through
