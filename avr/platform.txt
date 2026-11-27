@@ -11,7 +11,7 @@
 # https://arduino.github.io/arduino-cli/latest/platform-specification/
 
 name=AvrDebugger
-version=0.2.0
+version=0.2.1
 
 # {runtime.platform.path} is arduino:avr, not this platform, so that what arduino:avr
 # finds through it -- the bootloaders for "Burn Bootloader" above all -- is found.

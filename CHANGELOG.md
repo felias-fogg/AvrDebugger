@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.1
+- New version of PyAvrOCD: 2.1.0
+
 ## 0.2.0
 
 - A second platform in the package: *megaAvrDebugger* (`AvrDebugger:megaavr`) for the
