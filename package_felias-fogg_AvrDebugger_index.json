@@ -160,6 +160,80 @@
               "version": "2.0.0"
             }
           ]
+        },
+        {
+          "name": "AvrDebugger",
+          "architecture": "avr",
+          "version": "0.2.1",
+          "category": "Contributed",
+          "url": "https://github.com/felias-fogg/AvrDebugger/releases/download/v0.2.1/AvrDebugger-0.2.1.tar.bz2",
+          "archiveFileName": "AvrDebugger-0.2.1.tar.bz2",
+          "checksum": "SHA-256:be9c731a83753fda78f9cd26dce91afde618818d6441364582581235233184ba",
+          "size": "21899",
+          "boards": [
+            {
+              "name": "Arduino Leonardo (debug)"
+            },
+            {
+              "name": "Arduino Mega or Mega 2560 (debug)"
+            },
+            {
+              "name": "Arduino Nano (debug)"
+            },
+            {
+              "name": "Arduino Pro or Pro Mini (debug)"
+            },
+            {
+              "name": "Arduino UNO (debug)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "AvrDebugger",
+              "name": "avrdude",
+              "version": "8.3"
+            },
+            {
+              "packager": "AvrDebugger",
+              "name": "avr-debugger",
+              "version": "2.1.0"
+            }
+          ]
+        },
+        {
+          "name": "megaAvrDebugger",
+          "architecture": "megaavr",
+          "version": "0.2.1",
+          "category": "Contributed",
+          "url": "https://github.com/felias-fogg/AvrDebugger/releases/download/v0.2.1/megaAvrDebugger-0.2.1.tar.bz2",
+          "archiveFileName": "megaAvrDebugger-0.2.1.tar.bz2",
+          "checksum": "SHA-256:94e93a307faa733f64663943862da3bd3946207cc595e155774986b91d16b687",
+          "size": "16793",
+          "boards": [
+            {
+              "name": "Arduino Nano Every (debug)"
+            },
+            {
+              "name": "Arduino Uno WiFi Rev2 (debug)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "arduino",
+              "name": "avr-gcc",
+              "version": "7.3.0-atmel3.6.1-arduino7"
+            },
+            {
+              "packager": "AvrDebugger",
+              "name": "avrdude",
+              "version": "8.3"
+            },
+            {
+              "packager": "AvrDebugger",
+              "name": "avr-debugger",
+              "version": "2.1.0"
+            }
+          ]
         }
       ],
       "tools": [
@@ -270,6 +344,68 @@
               "host": "i686-mingw32",
               "archiveFileName": "avrdude_v8.3_Windows_32bit.tar.gz",
               "url": "https://github.com/avrdudes/avrdude/releases/download/v8.3/avrdude_v8.3_Windows_32bit.tar.gz"
+            }
+          ]
+        },
+        {
+          "name": "avr-debugger",
+          "version": "2.1.0",
+          "systems": [
+            {
+              "size": "30581430",
+              "checksum": "SHA-256:2019a09e34999c7ab076814458cc906ea93b858b09220f5720cf675a017335b1",
+              "host": "aarch64-linux-gnu",
+              "archiveFileName": "avr-debugger-2.1.0-aarch64-linux-gnu.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.1.0/avr-debugger-2.1.0-aarch64-linux-gnu.tar.gz"
+            },
+            {
+              "size": "25238741",
+              "checksum": "SHA-256:da0901596060b1078e93b2c66abb5a6ddda9e7d37d6e92a46a8ff05708912c13",
+              "host": "arm-linux-gnueabihf",
+              "archiveFileName": "avr-debugger-2.1.0-arm-linux-gnueabihf.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.1.0/avr-debugger-2.1.0-arm-linux-gnueabihf.tar.gz"
+            },
+            {
+              "size": "36324968",
+              "checksum": "SHA-256:02a66ed77b9268c22ced4ea54f5b1a490194b6229b958ce5e4b4b06f1b04ec7a",
+              "host": "arm64-apple-darwin",
+              "archiveFileName": "avr-debugger-2.1.0-arm64-apple-darwin.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.1.0/avr-debugger-2.1.0-arm64-apple-darwin.tar.gz"
+            },
+            {
+              "size": "29365564",
+              "checksum": "SHA-256:24165fa349c0f1fc68fae4499d0853101454323af84f370b61bba2d94222e675",
+              "host": "i686-linux-gnu",
+              "archiveFileName": "avr-debugger-2.1.0-i686-linux-gnu.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.1.0/avr-debugger-2.1.0-i686-linux-gnu.tar.gz"
+            },
+            {
+              "size": "28923062",
+              "checksum": "SHA-256:61b8dbd4fe0312119e5cabd931b6b1a554dedb4431d91ef54cc01c59efad56e2",
+              "host": "i686-mingw32",
+              "archiveFileName": "avr-debugger-2.1.0-i686-mingw32.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.1.0/avr-debugger-2.1.0-i686-mingw32.tar.gz"
+            },
+            {
+              "size": "37591439",
+              "checksum": "SHA-256:35a0213f2c6533bfb17f81c1c9255ef9d91437e8d73a1faab54b75935e2c822c",
+              "host": "x86_64-apple-darwin",
+              "archiveFileName": "avr-debugger-2.1.0-x86_64-apple-darwin.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.1.0/avr-debugger-2.1.0-x86_64-apple-darwin.tar.gz"
+            },
+            {
+              "size": "29979560",
+              "checksum": "SHA-256:c3d98a3517eb9f2c90fb18df7e4dfee6ca899751a178fde5c1bcb89856edc767",
+              "host": "x86_64-linux-gnu",
+              "archiveFileName": "avr-debugger-2.1.0-x86_64-linux-gnu.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.1.0/avr-debugger-2.1.0-x86_64-linux-gnu.tar.gz"
+            },
+            {
+              "size": "30897264",
+              "checksum": "SHA-256:acfa3068245f0b4340097d6c378bcca0c4b8b24425cf6f739cdbea93b2eb4ef1",
+              "host": "x86_64-mingw32",
+              "archiveFileName": "avr-debugger-2.1.0-x86_64-mingw32.tar.gz",
+              "url": "https://github.com/felias-fogg/PyAvrOCD/releases/download/v2.1.0/avr-debugger-2.1.0-x86_64-mingw32.tar.gz"
             }
           ]
         }
